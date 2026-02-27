@@ -1,6 +1,7 @@
-// =======================
+/// =======================
 // MediBridge Backend Server
 // =======================
+require("dotenv").config();
 
 const express = require("express");
 const mysql = require("mysql2");
@@ -26,13 +27,14 @@ const db = mysql.createConnection({
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    port: 3306
+    port: Number(process.env.DB_PORT)
 });
-
 db.connect(err => {
     if (err) throw err;
     console.log("DB connected ✅");
 });
+
+console.log(process.env.DB_USER);
 
 // =======================
 // JWT MIDDLEWARE
@@ -291,16 +293,17 @@ app.get("/caretaker/patient/:id", verifyToken, (req, res) => {
 // =======================
 cron.schedule("* * * * *", () => {
 
-    db.query("SELECT * FROM medicines", (err, rows) => {
+    db.query(
+        "SELECT * FROM medicines WHERE taken=0",
+        (err, rows) => {
 
-        if (err) return;
+            if (err) return console.error(err);
 
-        rows.forEach(row => {
-            console.log(`🔔 Reminder triggered for ${row.name}`);
-        });
-
-    });
-
+            rows.forEach(m => {
+                console.log(`🔔 Reminder triggered for ${m.name}`);
+            });
+        }
+    );
 });
 
 console.log("Reminder system started ⏰");
@@ -316,6 +319,7 @@ app.get("/", (req, res) => {
 // START SERVER
 // =======================
 const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server running on port ${PORT} 🚀`);
 });
