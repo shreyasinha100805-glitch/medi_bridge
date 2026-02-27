@@ -22,10 +22,11 @@ const JWT_SECRET = "medibridge_secret_key";
 // DATABASE
 // =======================
 const db = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "12345",
-    database: "medibridge_1"
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: 3306
 });
 
 db.connect(err => {
@@ -290,17 +291,16 @@ app.get("/caretaker/patient/:id", verifyToken, (req, res) => {
 // =======================
 cron.schedule("* * * * *", () => {
 
-    db.query(
-        "SELECT * FROM medicines WHERE taken=0",
-        (err, rows) => {
+    db.query("SELECT * FROM medicines", (err, rows) => {
 
-            if (err) return console.error(err);
+        if (err) return;
 
-            rows.forEach(m => {
-                console.log(`🔔 Reminder triggered for ${row.name}`);
-            });
-        }
-    );
+        rows.forEach(row => {
+            console.log(`🔔 Reminder triggered for ${row.name}`);
+        });
+
+    });
+
 });
 
 console.log("Reminder system started ⏰");
@@ -315,6 +315,7 @@ app.get("/", (req, res) => {
 // =======================
 // START SERVER
 // =======================
-app.listen(3000, () => {
-    console.log("Server running on port 3000 🚀");
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
